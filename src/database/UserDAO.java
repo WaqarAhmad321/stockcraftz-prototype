@@ -6,43 +6,58 @@ import model.UserRole;
 import java.sql.*;
 
 public class UserDAO {
-    public User registerUser(String username, String password) {
-        String sql = "INSERT INTO users (username, password, role) VALUES (?, ?, ?)";
+        public boolean userExists(String username) throws SQLException {
+            String sql = "SELECT COUNT(*) FROM users WHERE username = ?";
 
-        int rowsAffected = DBUtils.executeUpdate(sql, stmt -> {
-            stmt.setString(1, username);
-            stmt.setString(2, password);
-            stmt.setString(3, "CRAFTER");
-        });
+            return DBUtils.executeQuery(sql, stmt -> {
+                stmt.setString(1, username);
+            }, rs -> {
+                if (rs.next()) {
+                    return rs.getInt(1) > 0;
+                }
 
-        if (rowsAffected > 0) {
-            return new User(1, username, 0, UserRole.CRAFTER, password);
-        } else {
-            return null;
+                return false;
+            });
         }
-    }
 
-    public User login(String username, String password) {
+        public User registerUser(String username, String password) throws SQLException {
+            String sql = "INSERT INTO users (username, password, role) VALUES (?, ?, ?) RETURNING id, username, balance, role";
+
+            if (userExists(username)) {
+                throw new SQLException("User already exists. Please try again.");
+            }
+
+            return DBUtils.executeQuery(sql, stmt -> {
+                stmt.setString(1, username);
+                stmt.setString(2, password);
+                stmt.setString(3, UserRole.CRAFTER.toString());
+            }, rs -> {
+                if (rs.next()) {
+                    return new User(
+                            rs.getInt("id"),
+                            rs.getString("username"),
+                            rs.getDouble("balance"),
+                            UserRole.valueOf(rs.getString("role"))
+                    );
+                }
+                throw new SQLException("Failed to register user");
+            });
+        }
+
+    public User loginUser(String username, String password) throws SQLException {
         String sql = "SELECT * FROM users WHERE username = ? AND password = ?";
 
-        return DBUtils.execute(sql, stmt -> {
-            stmt.setString(1, username);
-            stmt.setString(2, password);
-        }, stmt -> {
-            ResultSet rs = stmt.executeQuery();
-
-            if (rs.next()) {
-                return new User(
+        return DBUtils.executeQuery(sql, stmt -> {
+                    stmt.setString(1, username);
+                    stmt.setString(2, password);
+                }, rs -> rs.next()
+                        ? new User(
                         rs.getInt("id"),
                         rs.getString("username"),
                         rs.getDouble("balance"),
-                        UserRole.CRAFTER,
-                        rs.getString("password")
-
-                );
-            }
-                return null;
-            }
+                        UserRole.valueOf(rs.getString("role"))
+                )
+                : null
         );
     }
 }
