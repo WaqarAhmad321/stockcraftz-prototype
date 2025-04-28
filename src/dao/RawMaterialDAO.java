@@ -1,5 +1,6 @@
-package database;
+package dao;
 
+import database.DBUtils;
 import model.MaterialType;
 import model.RawMaterial;
 
@@ -47,6 +48,16 @@ public class RawMaterialDAO {
 
         return DBUtils.executeUpdate(sql, stmt -> {
             stmt.setInt(1, materialId);
+        });
+    }
+
+    public boolean updateRawMaterialQuantity(int userId, String materialType, int updatedQuantity) throws SQLException {
+        String sql = "UPDATE raw_material_inventory SET quantity = ? WHERE user_id = ? AND material_type = ?";
+
+        return DBUtils.executeUpdate(sql, stmt -> {
+            stmt.setInt(1, updatedQuantity);
+            stmt.setInt(2, userId);
+            stmt.setString(3, materialType);
         });
     }
 }

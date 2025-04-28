@@ -1,5 +1,6 @@
-package database;
+package dao;
 
+import database.DBUtils;
 import model.User;
 import model.UserRole;
 
@@ -59,5 +60,14 @@ public class UserDAO {
                 )
                 : null
         );
+    }
+
+    public boolean deductBalance(int userId, double balance) throws SQLException {
+            String sql = "UPDATE users SET balance = balance - ? WHERE id = ?";
+
+            return DBUtils.executeUpdate(sql, stmt -> {
+                stmt.setDouble(1, balance);
+                stmt.setInt(2, userId);
+            });
     }
 }

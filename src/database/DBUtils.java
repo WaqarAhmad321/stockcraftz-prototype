@@ -27,7 +27,9 @@ public class DBUtils {
         try (Connection conn = connectDB()) {
             PreparedStatement stmt = conn.prepareStatement(sql);
             // Set parameters using the preparer
-            preparer.accept(stmt);
+            if (preparer != null) {
+                preparer.accept(stmt);
+            }
 
             try (ResultSet rs = stmt.executeQuery()) {
                 return mapper.map(rs);
