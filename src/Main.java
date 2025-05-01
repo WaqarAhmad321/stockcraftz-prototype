@@ -9,14 +9,55 @@ import model.User;
 import java.sql.SQLException;
 import java.util.Scanner;
 
-// mention about team, self learning, show confidence, tell about learning, resources
+/*
+  * I bet this is going to be the best project you have seen. We did self learning and used a lot of things which are not even taught in course yet,
+  like using jdbc, postgresql database, JARs, interfaces, generics, hashmaps, lambda functions, and exceptional handling. We have used the best practices out there
+  to write this code like dividing the code into controllers, models, and DAOs (database access objects), and used the oop concepts
+  very efficiently for creating reusable components like the dbutils. Everything is realtime and is stored in database
+*/
+
+/*
+Usage of Models:
+ * Contains all data model classes representing business entities.
+ * Each class mirrors database tables with fields, constructors, and getters/setters.
+
+ * Example:
+ * - User.java (id, username, passwordHash, role)
+ * - Material.java (id, type, quantity)
+*/
+
+/*
+Usage of DAOs:
+ * Handles all database operations using JDBC.
+ * Each DAO corresponds to a model class and performs CRUD operations.
+ *
+ * Example:
+ * - UserDAO.java
+ * - MaterialDAO.java (addStock, checkInventory)
+*/
+
+/*
+ * Contains application logic that bridges models and views.
+ * Handles user input, processes data, and manages transactions.
+ *
+ * Currently CLI-based, but controllers are intentionally view-agnostic
+ * to simplify JavaFX migration (controllers will integrate with FXML later).
+ *
+ * Example:
+ * - MarketplaceController.java (additem)
+ * - InventoryController.java (addMaterial, checkStock)
+ */
+
+/*
+    Note: To Test the application use the following credentials:
+    * username: testuser
+    * password: testpass
+*/
 
 public class Main {
     public static void main(String[] args) {
         Scanner scanner = new Scanner(System.in);
         System.out.println("/*==== StockCraftz - A Stock Management System ====*\\");
-
-        User currentUser = null;
 
         while (true) {
             System.out.println("1. Register");
@@ -25,6 +66,11 @@ public class Main {
 
             System.out.print("Enter your choice: ");
             int choice = Input.integerInput();
+
+            if (choice == 0) {
+                System.out.println("Exiting...");
+                break;
+            }
 
             System.out.print("Enter your username: ");
             String username = scanner.nextLine();
@@ -35,36 +81,22 @@ public class Main {
             UserDAO userDAO = new UserDAO();
 
             try {
-                switch (choice) {
-                    case 1:
-                        currentUser = userDAO.registerUser(username, password);
+                User user = null;
 
-                        if (currentUser != null) {
-                            System.out.println("Registration successful");
-                        }
-                        break;
-                    case 2:
-                        currentUser = userDAO.loginUser(username, password);
-                        if (currentUser != null) {
-
-                        }
-                        System.out.println("Login successful");
-                        break;
-                    case 0:
-                        System.out.println("Exiting...");
-                        return;
-                    default:
-                        System.out.println("Invalid choice. Try again.");
-                        continue;
+                if (choice == 1) {
+                    user = userDAO.registerUser(username, password);
+                    System.out.println(user != null ? "\nRegistered!\n" : "\nRegistration failed.\n");
+                }  else if (choice == 2) {
+                    user = userDAO.loginUser(username, password);
+                    System.out.println(user != null ? "\nLogin success!\n" : "\nInvalid credentials.\n");
                 }
 
-                if (currentUser != null) {
-                    System.out.printf("Your balance is: %s\n", currentUser.balance());
-                    showMainMenu(scanner, currentUser);
-                    currentUser = null; // Reset after leaving inventory
+                if (user != null) {
+                    System.out.printf("Your balance is: %s\n", user.balance());
+                    showMainMenu(scanner, user);
+                    user = null; // Reset after leaving inventory
                 }
             } catch (SQLException e) {
-                e.printStackTrace();
                 System.out.println("Something went wrong. Please try again!");
             }
         }

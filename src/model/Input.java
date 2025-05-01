@@ -12,6 +12,7 @@ public class Input {
                 return integer;
             } catch (NumberFormatException e) {
                 System.out.println("Please enter a valid numeric.");
+                System.out.print("Re-Enter: ");
             }
         }
     }

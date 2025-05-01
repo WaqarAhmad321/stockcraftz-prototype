@@ -32,20 +32,37 @@ public class RawMaterialController {
         RawMaterialDAO rawMaterialDAO = new RawMaterialDAO();
         Scanner scanner = new Scanner(System.in);
 
-        System.out.println("Enter Material Type: ");
+        System.out.println("Available Material Types:");
         for (MaterialType type : MaterialType.values()) {
-            System.out.println("- " + type);
+            System.out.println("- " + type.name().toLowerCase());
         }
 
-        MaterialType type = MaterialType.valueOf(scanner.nextLine().toUpperCase());
+        MaterialType materialType = null;
+        while (materialType == null) {
+            System.out.print("Enter material type: ");
+            String input = scanner.nextLine().trim().toUpperCase();
 
-        // System.out.print("Enter item name (display name): ");
-        // String itemName = scanner.nextLine();
+            try {
+                materialType = MaterialType.valueOf(input);
+            } catch (IllegalArgumentException e) {
+                System.out.println("Invalid material type. Please choose from the list above.");
+            }
+        }
 
-        System.out.print("Enter quantity: ");
-        int qty = Integer.parseInt(scanner.nextLine());
+        int quantity = -1;
+        while (quantity < 0) {
+            System.out.print("Enter quantity: ");
+            try {
+                quantity = Integer.parseInt(scanner.nextLine());
+                if (quantity < 0) {
+                    System.out.println("Quantity must be positive.");
+                }
+            } catch (NumberFormatException e) {
+                System.out.println("Invalid number. Please enter digits only.");
+            }
+        }
 
-        boolean success = rawMaterialDAO.addRawMaterial(user.id(), type, qty);
+        boolean success = rawMaterialDAO.addRawMaterial(user.id(), materialType, quantity);
 
         if (success) {
             System.out.println("Material added successfully.");
